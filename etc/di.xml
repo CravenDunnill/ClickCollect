@@ -23,4 +23,13 @@
 	<type name="Magento\Sales\Model\ResourceModel\Order\Grid\Collection">
 		<plugin name="click_collect_add_to_grid" type="CravenDunnill\ClickCollect\Plugin\AddCollectionDateToOrderGrid" />
 	</type>
+	
+	<!-- Add shipping carrier registration -->
+	<type name="Magento\Shipping\Model\Config">
+		<arguments>
+			<argument name="carriers" xsi:type="array">
+				<item name="clickcollect" xsi:type="string">CravenDunnill\ClickCollect\Model\Carrier\ClickCollect</item>
+			</argument>
+		</arguments>
+	</type>
 </config>

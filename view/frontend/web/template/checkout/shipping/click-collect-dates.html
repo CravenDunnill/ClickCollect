@@ -1,6 +1,6 @@
 <div id="click-collect-dates-container" class="click-collect-dates-container" data-bind="visible: isClickCollectMethod()">
-	<div class="step-title" data-role="title" data-bind="i18n: 'Collect your order from 2 hours'"></div>
-	<div class="click-collect-description" data-bind="i18n: 'It\'s free to collect your order from our warehouse in Bridgnorth, Shropshire. We\'re open Monday to Friday 9am to 4pm.'"></div>
+	<div class="step-title" data-role="title" data-bind="text: getHeading()"></div>
+	<div class="click-collect-description" data-bind="text: getDescription()"></div>
 	<div class="click-collect-dates-list">
 		<div class="field required">
 			<label class="label" for="click_collect_date"><span data-bind="i18n: 'Select Collection Date'"></span></label>

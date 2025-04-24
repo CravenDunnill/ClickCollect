@@ -28,6 +28,7 @@
 				<saturday_enabled>0</saturday_enabled>
 				<sunday_enabled>0</sunday_enabled>
 				<model>CravenDunnill\ClickCollect\Model\Carrier\ClickCollect</model>
+				<sallowspecific>0</sallowspecific>
 				<sort_order>15</sort_order>
 			</clickcollect>
 		</carriers>

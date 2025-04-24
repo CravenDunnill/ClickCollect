@@ -3,6 +3,7 @@ namespace CravenDunnill\ClickCollect\Model;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use CravenDunnill\ClickCollect\Helper\Data as ClickCollectHelper;
+use Psr\Log\LoggerInterface;
 
 class CheckoutConfigProvider implements ConfigProviderInterface
 {
@@ -10,14 +11,22 @@ class CheckoutConfigProvider implements ConfigProviderInterface
 	 * @var ClickCollectHelper
 	 */
 	protected $helper;
+	
+	/**
+	 * @var LoggerInterface
+	 */
+	protected $logger;
 
 	/**
 	 * @param ClickCollectHelper $helper
+	 * @param LoggerInterface $logger
 	 */
 	public function __construct(
-		ClickCollectHelper $helper
+		ClickCollectHelper $helper,
+		LoggerInterface $logger
 	) {
 		$this->helper = $helper;
+		$this->logger = $logger;
 	}
 
 	/**
@@ -30,13 +39,8 @@ class CheckoutConfigProvider implements ConfigProviderInterface
 		$config = [];
 		
 		if ($this->helper->isEnabled()) {
+			$this->logger->debug('Click & Collect is enabled, generating config for checkout');
 			$dates = $this->helper->getAvailableCollectionDates();
-			
-			// Debug - log available dates
-			$writer = new \Zend\Log\Writer\Stream(BP . '/var/log/click_collect_dates.log');
-			$logger = new \Zend\Log\Logger();
-			$logger->addWriter($writer);
-			$logger->info('Available dates: ' . print_r($dates, true));
 			
 			$formattedDates = [];
 			foreach ($dates as $date) {
@@ -59,9 +63,9 @@ class CheckoutConfigProvider implements ConfigProviderInterface
 			}
 			$config['clickCollectHolidays'] = $holidays;
 			
-			// Debug - log formatted dates and holidays
-			$logger->info('Formatted dates for checkout: ' . print_r($formattedDates, true));
-			$logger->info('Holidays for checkout: ' . print_r($this->helper->getHolidays(), true));
+			$this->logger->debug('Click & Collect checkout config generated with ' . count($formattedDates) . ' dates');
+		} else {
+			$this->logger->debug('Click & Collect is disabled, no config generated');
 		}
 		
 		return $config;

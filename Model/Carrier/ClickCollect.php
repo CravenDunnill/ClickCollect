@@ -19,6 +19,11 @@ class ClickCollect extends AbstractCarrier implements CarrierInterface
 	protected $_code = 'clickcollect';
 
 	/**
+	 * @var bool
+	 */
+	protected $_isFixed = true;
+
+	/**
 	 * @var ResultFactory
 	 */
 	protected $_rateResultFactory;
@@ -57,9 +62,15 @@ class ClickCollect extends AbstractCarrier implements CarrierInterface
 	 */
 	public function collectRates(RateRequest $request)
 	{
+		// Debug logging using Magento's built-in logger
+		$this->_logger->debug('ClickCollect::collectRates called');
+		
 		if (!$this->getConfigFlag('active')) {
+			$this->_logger->debug('ClickCollect shipping method is not active');
 			return false;
 		}
+		
+		$this->_logger->debug('ClickCollect is active, creating rate result');
 
 		/** @var Result $result */
 		$result = $this->_rateResultFactory->create();
@@ -75,6 +86,8 @@ class ClickCollect extends AbstractCarrier implements CarrierInterface
 		$method->setCost(0);
 
 		$result->append($method);
+		
+		$this->_logger->debug('Added method to result: ' . $this->_code);
 
 		return $result;
 	}

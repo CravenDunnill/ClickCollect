@@ -1,4 +1,19 @@
-define([
+/**
+		 * Check if a date is a holiday
+		 * 
+		 * @param {string} dateString Date in YYYY-MM-DD format
+		 * @returns {boolean}
+		 */
+		isHoliday: function(dateString) {
+			// Specific exclusion for the problematic date
+			if (dateString === '2025-04-25') {
+				console.log('Forcibly excluding ' + dateString);
+				return true;
+			}
+			
+			// Check if the date is in the holidays array
+			return this.holidays && this.holidays.indexOf(dateString) !== -1;
+		},define([
 	'jquery',
 	'ko',
 	'uiComponent',
@@ -127,20 +142,27 @@ define([
 		},
 		
 		/**
-		 * Check if a date is a holiday
-		 * 
-		 * @param {string} dateString Date in YYYY-MM-DD format
-		 * @returns {boolean}
+		 * Get heading text from configuration
+		 *
+		 * @returns {string}
 		 */
-		isHoliday: function(dateString) {
-			// Specific exclusion for the problematic date
-			if (dateString === '2025-04-25') {
-				console.log('Forcibly excluding ' + dateString);
-				return true;
+		getHeading: function() {
+			if (window.checkoutConfig && window.checkoutConfig.clickCollectHeading) {
+				return window.checkoutConfig.clickCollectHeading;
 			}
-			
-			// Check if the date is in the holidays array
-			return this.holidays && this.holidays.indexOf(dateString) !== -1;
+			return 'Collect your order from 2 hours';
+		},
+		
+		/**
+		 * Get description text from configuration
+		 *
+		 * @returns {string}
+		 */
+		getDescription: function() {
+			if (window.checkoutConfig && window.checkoutConfig.clickCollectDescription) {
+				return window.checkoutConfig.clickCollectDescription;
+			}
+			return 'It\'s free to collect your order from our warehouse. We\'re open Monday to Friday 9am to 4pm.';
 		},
 		
 		/**
