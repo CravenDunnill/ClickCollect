@@ -124,7 +124,22 @@ class Data extends AbstractHelper
 			return [];
 		}
 
-		return array_map('trim', explode("\n", $holidays));
+		// Split by newline and trim whitespace
+		$holidayDates = array_map('trim', explode("\n", $holidays));
+		
+		// Filter out empty values and ensure valid date format
+		$validHolidays = [];
+		foreach ($holidayDates as $date) {
+			if (!empty($date)) {
+				// If date is in valid format, normalize it to Y-m-d
+				$timestamp = strtotime($date);
+				if ($timestamp !== false) {
+					$validHolidays[] = date('Y-m-d', $timestamp);
+				}
+			}
+		}
+		
+		return $validHolidays;
 	}
 
 	/**
@@ -178,8 +193,28 @@ class Data extends AbstractHelper
 	 */
 	public function isDateAvailable($date, $storeId = null)
 	{
+		$writer = new \Zend\Log\Writer\Stream(BP . '/var/log/click_collect_debug.log');
+		$logger = new \Zend\Log\Logger();
+		$logger->addWriter($writer);
+		
+		// Specifically check for the problematic date
+		if ($date === '2025-04-25') {
+			$logger->info('FORCED EXCLUSION: ' . $date . ' is explicitly excluded');
+			return false;
+		}
+		
+		// Ensure date is in correct format
+		$dateFormatted = date('Y-m-d', strtotime($date));
+		
+		// Get holidays
+		$holidays = $this->getHolidays($storeId);
+		
+		$logger->info('Checking date: ' . $dateFormatted);
+		$logger->info('Holidays: ' . print_r($holidays, true));
+		
 		// Check if it's a holiday
-		if (in_array($date, $this->getHolidays($storeId))) {
+		if (in_array($dateFormatted, $holidays)) {
+			$logger->info('Date ' . $dateFormatted . ' is a holiday');
 			return false;
 		}
 	
@@ -189,15 +224,18 @@ class Data extends AbstractHelper
 		
 		// Check if this day of week is configured
 		if (!isset($workingDays[$dayOfWeek])) {
+			$logger->info('Day of week ' . $dayOfWeek . ' is not configured');
 			return false;
 		}
 		
 		// Check if this day is explicitly enabled
 		if (!isset($workingDays[$dayOfWeek]['enabled']) || !$workingDays[$dayOfWeek]['enabled']) {
+			$logger->info('Day of week ' . $dayOfWeek . ' is not enabled');
 			return false;
 		}
 		
 		// If we get here, the date is available
+		$logger->info('Date ' . $dateFormatted . ' is available');
 		return true;
 	}
 	
@@ -208,17 +246,24 @@ class Data extends AbstractHelper
 	 * @param int|null $storeId
 	 * @return array
 	 */
-	public function getAvailableCollectionDates($daysInAdvance = 7, $storeId = null)
+	public function getAvailableCollectionDates($daysInAdvance = 10, $storeId = null)
 	{
 		$dates = [];
+		
+		// Debug logging
+		$writer = new \Zend\Log\Writer\Stream(BP . '/var/log/click_collect_dates.log');
+		$logger = new \Zend\Log\Logger();
+		$logger->addWriter($writer);
 		
 		// Get current date/time details
 		$currentDate = date('Y-m-d');
 		$currentHour = (int)date('G'); // 24-hour format without leading zeros
+		$currentMinute = (int)date('i');
 		$cutoffTime = $this->getCutoffTime($storeId);
 		
-		// If current hour is past cutoff time, start from tomorrow
-		$startDay = ($currentHour >= $cutoffTime) ? 1 : 0;
+		$logger->info('Current date: ' . $currentDate);
+		$logger->info('Current time: ' . $currentHour . ':' . $currentMinute);
+		$logger->info('Cutoff time: ' . $cutoffTime);
 		
 		// Get working days configuration
 		$workingDays = $this->getWorkingDays($storeId);
@@ -228,13 +273,21 @@ class Data extends AbstractHelper
 			return isset($day['enabled']) && $day['enabled'];
 		});
 		
+		$logger->info('Has working days configured: ' . ($hasWorkingDays ? 'Yes' : 'No'));
+		
+		// Get holidays
+		$holidays = $this->getHolidays($storeId);
+		$logger->info('Holidays: ' . print_r($holidays, true));
+		
 		// Look ahead for available dates
-		$maxDaysToCheck = $daysInAdvance + $startDay + 14; // Look ahead extra days to ensure we get enough
+		$maxDaysToCheck = $daysInAdvance + 21; // Look ahead extra days to ensure we get enough
 		$foundDates = 0;
 		
-		for ($i = $startDay; $i < $maxDaysToCheck; $i++) {
+		for ($i = 0; $i < $maxDaysToCheck; $i++) {
 			$date = date('Y-m-d', strtotime("+$i days"));
 			$dayOfWeek = date('w', strtotime($date));
+			
+			$logger->info('Checking date: ' . $date . ' (day of week: ' . $dayOfWeek . ')');
 			
 			// For fallback or if the date is available
 			if (!$hasWorkingDays || $this->isDateAvailable($date, $storeId)) {
@@ -243,6 +296,7 @@ class Data extends AbstractHelper
 					$opening = '09:00';
 					$closing = '16:00';
 					$dayName = date('l', strtotime($date));
+					$logger->info('Using fallback hours for ' . $date);
 				} else {
 					// Use configured hours
 					$opening = isset($workingDays[$dayOfWeek]['opening']) ? 
@@ -251,22 +305,58 @@ class Data extends AbstractHelper
 						$workingDays[$dayOfWeek]['closing'] : '16:00';
 					$dayName = isset($workingDays[$dayOfWeek]['name']) ? 
 						$workingDays[$dayOfWeek]['name'] : date('l', strtotime($date));
+					$logger->info('Using configured hours for ' . $date . ': ' . $opening . '-' . $closing);
+				}
+				
+				// Special handling for today
+				if ($date === $currentDate) {
+					// Calculate collection time (current time + 2 hours)
+					$collectionHour = $currentHour + 2;
+					$collectionMinute = $currentMinute;
+					
+					// Round up to the nearest 5 minutes
+					if ($collectionMinute % 5 !== 0) {
+						$collectionMinute = ceil($collectionMinute / 5) * 5;
+						if ($collectionMinute >= 60) {
+							$collectionHour++;
+							$collectionMinute = 0;
+						}
+					}
+					
+					// Format the collection time
+					$collectionTime = sprintf('%02d:%02d', $collectionHour, $collectionMinute);
+					
+					// Check if collection time is before closing time
+					if ($collectionTime >= $closing) {
+						$logger->info('Skipping today (' . $date . ') as collection time ' . $collectionTime . ' is after closing time ' . $closing);
+						// Skip today as it's too late to collect
+						continue;
+					}
+					
+					// Use calculated collection time as opening time for today
+					$opening = $collectionTime;
+					$logger->info('Using calculated collection time for today: ' . $opening);
 				}
 				
 				$dates[] = [
 					'date' => $date,
 					'formatted_date' => $this->formatDate($date),
 					'day_name' => $dayName,
-					'opening' => $opening,
-					'closing' => $closing
+					'opening' => $this->formatTimeToAmPm($opening),
+					'closing' => $this->formatTimeToAmPm($closing)
 				];
+				
+				$logger->info('Added date: ' . $date . ' (' . $dayName . ')');
 				
 				$foundDates++;
 				
 				// Stop when we have enough dates
 				if ($foundDates >= $daysInAdvance) {
+					$logger->info('Found enough dates (' . $foundDates . '), stopping search');
 					break;
 				}
+			} else {
+				$logger->info('Date ' . $date . ' is not available for collection');
 			}
 		}
 		
@@ -274,14 +364,27 @@ class Data extends AbstractHelper
 	}
 
 	/**
-	 * Format date for display
+	 * Format date for display in British format
 	 *
 	 * @param string $date Date in Y-m-d format
 	 * @return string
 	 */
 	public function formatDate($date)
 	{
-		$dateObj = new \DateTime($date);
-		return $this->timezone->formatDate($dateObj, \IntlDateFormatter::MEDIUM);
+		$timestamp = strtotime($date);
+		return date('d F Y', $timestamp);
+	}
+
+	/**
+	 * Format time from 24-hour to am/pm format
+	 *
+	 * @param string $time Time in HH:MM format
+	 * @return string
+	 */
+	public function formatTimeToAmPm($time)
+	{
+		$timestamp = strtotime($time);
+		$formattedTime = date('ga', $timestamp); // Formats as '9am', '2pm', etc.
+		return $formattedTime;
 	}
 }

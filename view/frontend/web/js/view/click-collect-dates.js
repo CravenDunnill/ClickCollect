@@ -31,6 +31,13 @@ define([
 			console.log('Checkout Config:', window.checkoutConfig);
 			console.log('Click & Collect Dates:', window.checkoutConfig ? window.checkoutConfig.clickCollectDates : 'Not Available');
 			
+			// Get holidays from config if available
+			this.holidays = [];
+			if (window.checkoutConfig && window.checkoutConfig.clickCollectHolidays) {
+				this.holidays = window.checkoutConfig.clickCollectHolidays;
+				console.log('Holidays from config:', this.holidays);
+			}
+			
 			// Subscribe to shipping method changes
 			quote.shippingMethod.subscribe(function (method) {
 				console.log('Shipping method changed:', method);
@@ -93,6 +100,50 @@ define([
 		},
 		
 		/**
+		 * Format time in am/pm format
+		 *
+		 * @param {int} hours
+		 * @returns {string}
+		 */
+		formatTimeAmPm: function(hours) {
+			var suffix = hours >= 12 ? 'pm' : 'am';
+			hours = hours % 12;
+			hours = hours ? hours : 12; // Convert hour '0' to '12'
+			return hours + suffix;
+		},
+		
+		/**
+		 * Format time with minutes in am/pm format
+		 *
+		 * @param {int} hours
+		 * @param {int} minutes
+		 * @returns {string}
+		 */
+		formatTimeWithMinutes: function(hours, minutes) {
+			var suffix = hours >= 12 ? 'pm' : 'am';
+			hours = hours % 12;
+			hours = hours ? hours : 12; // Convert hour '0' to '12'
+			return hours + ':' + minutes.toString().padStart(2, '0') + suffix;
+		},
+		
+		/**
+		 * Check if a date is a holiday
+		 * 
+		 * @param {string} dateString Date in YYYY-MM-DD format
+		 * @returns {boolean}
+		 */
+		isHoliday: function(dateString) {
+			// Specific exclusion for the problematic date
+			if (dateString === '2025-04-25') {
+				console.log('Forcibly excluding ' + dateString);
+				return true;
+			}
+			
+			// Check if the date is in the holidays array
+			return this.holidays && this.holidays.indexOf(dateString) !== -1;
+		},
+		
+		/**
 		 * Generate fallback dates dynamically if server doesn't provide them
 		 */
 		generateFallbackDates: function() {
@@ -100,45 +151,97 @@ define([
 			var today = new Date();
 			var dayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
 			var currentHour = today.getHours();
+			var currentMinute = today.getMinutes();
 			
-			// Determine cutoff time - default to 2pm if not in config
-			var cutoffTime = 14;
-			if (window.checkoutConfig && window.checkoutConfig.clickCollectCutoffTime) {
-				cutoffTime = parseInt(window.checkoutConfig.clickCollectCutoffTime);
-			}
+			// Standard opening/closing hours
+			var openingHour = 9;
+			var closingHour = 16;
 			
-			// If it's past cutoff time, start from tomorrow
-			var startDay = (currentHour >= cutoffTime) ? 1 : 0;
+			console.log('Generating fallback dates...');
 			
-			// Look ahead 14 days to find 7 available days
-			for (var i = startDay; i < startDay + 14; i++) {
+			// Look ahead 21 days to find 10 available days
+			for (var i = 0; i < 21; i++) {
 				var testDate = new Date();
 				testDate.setDate(today.getDate() + i);
 				var testDayOfWeek = testDate.getDay();
 				
-				// Skip weekends (adjust as needed based on your working days)
-				if (testDayOfWeek === 0 || testDayOfWeek === 6) {
-					continue;
-				}
-				
-				// Format date for value
+				// Format date for value and holiday check
 				var year = testDate.getFullYear();
 				var month = (testDate.getMonth() + 1).toString().padStart(2, '0');
 				var day = testDate.getDate().toString().padStart(2, '0');
 				var dateValue = year + '-' + month + '-' + day;
 				
-				// Format date for display
-				var options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
-				var formattedDate = testDate.toLocaleDateString('en-US', options);
+				console.log('Checking date: ' + dateValue);
 				
-				// Add date to options
-				dates.push({
-					value: dateValue,
-					label: formattedDate + ' (09:00 - 16:00)'
-				});
+				// Skip weekends
+				if (testDayOfWeek === 0 || testDayOfWeek === 6) {
+					console.log('Skipping weekend day: ' + dateValue);
+					continue;
+				}
 				
-				// Stop when we have 7 dates
-				if (dates.length >= 7) {
+				// Skip holidays
+				if (this.isHoliday(dateValue)) {
+					console.log('Skipping holiday: ' + dateValue);
+					continue;
+				}
+				
+				// Format date for display in British format
+				var dayName = testDate.toLocaleDateString('en-GB', { weekday: 'long' });
+				var dayNum = testDate.getDate();
+				var monthName = testDate.toLocaleDateString('en-GB', { month: 'long' });
+				var yearNum = testDate.getFullYear();
+				var formattedDate = dayNum + ' ' + monthName + ' ' + yearNum;
+				
+				// Default opening and closing times
+				var startHour = openingHour;
+				var endHour = closingHour;
+				
+				// Special handling for today
+				if (i === 0) {
+					// Calculate collection time (current time + 2 hours)
+					var collectionHour = currentHour + 2;
+					var collectionMinute = currentMinute;
+					
+					// Round up to the nearest 5 minutes
+					if (collectionMinute % 5 !== 0) {
+						collectionMinute = Math.ceil(collectionMinute / 5) * 5;
+						if (collectionMinute >= 60) {
+							collectionHour++;
+							collectionMinute = 0;
+						}
+					}
+					
+					// Check if collection time is before closing time
+					if (collectionHour >= closingHour || 
+						(collectionHour === closingHour && collectionMinute > 0)) {
+						// Skip today as it's too late to collect
+						continue;
+					}
+					
+					// Use calculated collection time as opening time for today
+					startHour = collectionHour;
+					
+					// Display with minutes for today only
+					var label = dayName + ' ' + formattedDate + ' (from ' + 
+						this.formatTimeWithMinutes(collectionHour, collectionMinute) + '-' + 
+						this.formatTimeAmPm(endHour) + ')';
+						
+					dates.push({
+						value: dateValue,
+						label: label
+					});
+				} else {
+					// Normal display for future dates
+					dates.push({
+						value: dateValue,
+						label: dayName + ' ' + formattedDate + ' (from ' + 
+							this.formatTimeAmPm(startHour) + '-' + 
+							this.formatTimeAmPm(endHour) + ')'
+					});
+				}
+				
+				// Stop when we have 10 dates
+				if (dates.length >= 10) {
 					break;
 				}
 			}

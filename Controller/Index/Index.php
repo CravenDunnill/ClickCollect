@@ -44,7 +44,7 @@ class Index implements HttpGetActionInterface
 		foreach ($dates as $date) {
 			$formattedDates[] = [
 				'value' => $date['date'],
-				'label' => $date['day_name'] . ', ' . $date['formatted_date'] . ' (' . $date['opening'] . ' - ' . $date['closing'] . ')'
+				'label' => $date['day_name'] . ' ' . $date['formatted_date'] . ' (from ' . $date['opening'] . '-' . $date['closing'] . ')'
 			];
 		}
 		
