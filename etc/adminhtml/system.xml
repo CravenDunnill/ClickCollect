@@ -20,8 +20,10 @@
 				<field id="description" translate="label" type="textarea" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
 					<label>Description</label>
 				</field>
-				<field id="cutoff_time" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Cut-off Time (hours)</label>
+				<field id="cutoff_time" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Cut-off Time</label>
+					<source_model>CravenDunnill\ClickCollect\Model\Source\CutoffTime</source_model>
+					<comment>Orders placed after this time will be available for next available collection date</comment>
 				</field>
 				<field id="holidays" translate="label" type="textarea" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
 					<label>Holidays and Warehouse Closures</label>

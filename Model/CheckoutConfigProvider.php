@@ -46,26 +46,10 @@ class CheckoutConfigProvider implements ConfigProviderInterface
 				];
 			}
 			
-			// Ensure we have dates - if not, add fallback dates
-			if (empty($formattedDates)) {
-				$logger->info('No dates available, adding fallback dates');
-				
-				// Add fallback dates
-				for ($i = 0; $i < 7; $i++) {
-					$date = date('Y-m-d', strtotime("+$i days"));
-					$dayName = date('l', strtotime($date));
-					$formattedDate = date('M j, Y', strtotime($date));
-					
-					$formattedDates[] = [
-						'value' => $date,
-						'label' => $dayName . ', ' . $formattedDate . ' (09:00 - 16:00)'
-					];
-				}
-			}
-			
 			$config['clickCollectDates'] = $formattedDates;
 			$config['clickCollectHeading'] = $this->helper->getHeading();
 			$config['clickCollectDescription'] = $this->helper->getDescription();
+			$config['clickCollectCutoffTime'] = $this->helper->getCutoffTime();
 			
 			// Debug - log formatted dates
 			$logger->info('Formatted dates for checkout: ' . print_r($formattedDates, true));

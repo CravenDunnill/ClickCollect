@@ -14,6 +14,7 @@ define([
 		},
 		
 		selectedCollectionDate: ko.observable(''),
+		fallbackDates: ko.observableArray([]),
 		
 		/**
 		 * @returns {*}
@@ -22,6 +23,9 @@ define([
 			this._super();
 			
 			var self = this;
+			
+			// Generate fallback dates immediately
+			this.generateFallbackDates();
 			
 			// Debug - log checkout config
 			console.log('Checkout Config:', window.checkoutConfig);
@@ -78,7 +82,7 @@ define([
 		},
 		
 		/**
-		 * Check if dynamic dates are available
+		 * Check if dynamic dates are available from server
 		 *
 		 * @returns {boolean}
 		 */
@@ -86,6 +90,60 @@ define([
 			return window.checkoutConfig && 
 				   window.checkoutConfig.clickCollectDates && 
 				   window.checkoutConfig.clickCollectDates.length > 0;
+		},
+		
+		/**
+		 * Generate fallback dates dynamically if server doesn't provide them
+		 */
+		generateFallbackDates: function() {
+			var dates = [];
+			var today = new Date();
+			var dayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
+			var currentHour = today.getHours();
+			
+			// Determine cutoff time - default to 2pm if not in config
+			var cutoffTime = 14;
+			if (window.checkoutConfig && window.checkoutConfig.clickCollectCutoffTime) {
+				cutoffTime = parseInt(window.checkoutConfig.clickCollectCutoffTime);
+			}
+			
+			// If it's past cutoff time, start from tomorrow
+			var startDay = (currentHour >= cutoffTime) ? 1 : 0;
+			
+			// Look ahead 14 days to find 7 available days
+			for (var i = startDay; i < startDay + 14; i++) {
+				var testDate = new Date();
+				testDate.setDate(today.getDate() + i);
+				var testDayOfWeek = testDate.getDay();
+				
+				// Skip weekends (adjust as needed based on your working days)
+				if (testDayOfWeek === 0 || testDayOfWeek === 6) {
+					continue;
+				}
+				
+				// Format date for value
+				var year = testDate.getFullYear();
+				var month = (testDate.getMonth() + 1).toString().padStart(2, '0');
+				var day = testDate.getDate().toString().padStart(2, '0');
+				var dateValue = year + '-' + month + '-' + day;
+				
+				// Format date for display
+				var options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+				var formattedDate = testDate.toLocaleDateString('en-US', options);
+				
+				// Add date to options
+				dates.push({
+					value: dateValue,
+					label: formattedDate + ' (09:00 - 16:00)'
+				});
+				
+				// Stop when we have 7 dates
+				if (dates.length >= 7) {
+					break;
+				}
+			}
+			
+			this.fallbackDates(dates);
 		}
 	});
 });

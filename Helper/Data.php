@@ -187,18 +187,17 @@ class Data extends AbstractHelper
 		$dayOfWeek = date('w', strtotime($date));
 		$workingDays = $this->getWorkingDays($storeId);
 		
-		// FIXED: More lenient check for working days
+		// Check if this day of week is configured
 		if (!isset($workingDays[$dayOfWeek])) {
 			return false;
 		}
 		
-		// Assume the day is available if it's configured
-		// even if enabled is not explicitly set to true
-		if (!isset($workingDays[$dayOfWeek]['enabled'])) {
-			return true;
+		// Check if this day is explicitly enabled
+		if (!isset($workingDays[$dayOfWeek]['enabled']) || !$workingDays[$dayOfWeek]['enabled']) {
+			return false;
 		}
 		
-		// Return true for testing to ensure dates show up
+		// If we get here, the date is available
 		return true;
 	}
 	
@@ -212,56 +211,62 @@ class Data extends AbstractHelper
 	public function getAvailableCollectionDates($daysInAdvance = 7, $storeId = null)
 	{
 		$dates = [];
-		$today = date('Y-m-d');
 		
-		// If no working days are configured, return at least the next 7 days
+		// Get current date/time details
+		$currentDate = date('Y-m-d');
+		$currentHour = (int)date('G'); // 24-hour format without leading zeros
+		$cutoffTime = $this->getCutoffTime($storeId);
+		
+		// If current hour is past cutoff time, start from tomorrow
+		$startDay = ($currentHour >= $cutoffTime) ? 1 : 0;
+		
+		// Get working days configuration
 		$workingDays = $this->getWorkingDays($storeId);
-		if (empty($workingDays) || !array_filter($workingDays, function($day) {
+		
+		// Check if we have working days configured
+		$hasWorkingDays = !empty($workingDays) && array_filter($workingDays, function($day) {
 			return isset($day['enabled']) && $day['enabled'];
-		})) {
-			// Fallback: Return next 7 days
-			for ($i = 0; $i < $daysInAdvance; $i++) {
-				$date = date('Y-m-d', strtotime("+$i days"));
-				$dayName = date('l', strtotime($date));
+		});
+		
+		// Look ahead for available dates
+		$maxDaysToCheck = $daysInAdvance + $startDay + 14; // Look ahead extra days to ensure we get enough
+		$foundDates = 0;
+		
+		for ($i = $startDay; $i < $maxDaysToCheck; $i++) {
+			$date = date('Y-m-d', strtotime("+$i days"));
+			$dayOfWeek = date('w', strtotime($date));
+			
+			// For fallback or if the date is available
+			if (!$hasWorkingDays || $this->isDateAvailable($date, $storeId)) {
+				// For fallback, use default hours
+				if (!$hasWorkingDays) {
+					$opening = '09:00';
+					$closing = '16:00';
+					$dayName = date('l', strtotime($date));
+				} else {
+					// Use configured hours
+					$opening = isset($workingDays[$dayOfWeek]['opening']) ? 
+						$workingDays[$dayOfWeek]['opening'] : '09:00';
+					$closing = isset($workingDays[$dayOfWeek]['closing']) ? 
+						$workingDays[$dayOfWeek]['closing'] : '16:00';
+					$dayName = isset($workingDays[$dayOfWeek]['name']) ? 
+						$workingDays[$dayOfWeek]['name'] : date('l', strtotime($date));
+				}
 				
 				$dates[] = [
 					'date' => $date,
 					'formatted_date' => $this->formatDate($date),
 					'day_name' => $dayName,
-					'opening' => '09:00',
-					'closing' => '16:00'
-				];
-			}
-			
-			return $dates;
-		}
-		
-		// Normal date selection logic with safety checks
-		for ($i = 0; $i < $daysInAdvance + 7; $i++) {  // Look ahead extra days to ensure we get enough
-			$date = date('Y-m-d', strtotime("+$i days"));
-			
-			if ($this->isDateAvailable($date, $storeId)) {
-				$dayOfWeek = date('w', strtotime($date));
-				
-				// Default values for opening/closing if not set
-				$opening = isset($workingDays[$dayOfWeek]['opening']) ? 
-					$workingDays[$dayOfWeek]['opening'] : '09:00';
-				$closing = isset($workingDays[$dayOfWeek]['closing']) ? 
-					$workingDays[$dayOfWeek]['closing'] : '16:00';
-				
-				$dates[] = [
-					'date' => $date,
-					'formatted_date' => $this->formatDate($date),
-					'day_name' => isset($workingDays[$dayOfWeek]['name']) ? 
-						$workingDays[$dayOfWeek]['name'] : date('l', strtotime($date)),
 					'opening' => $opening,
 					'closing' => $closing
 				];
-			}
-			
-			// Stop when we have enough dates
-			if (count($dates) >= $daysInAdvance) {
-				break;
+				
+				$foundDates++;
+				
+				// Stop when we have enough dates
+				if ($foundDates >= $daysInAdvance) {
+					break;
+				}
 			}
 		}
 		
