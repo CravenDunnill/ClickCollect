@@ -1,32 +1,20 @@
-<div id="click-collect-dates-container" class="click-collect-dates-container" data-bind="visible: isClickCollectMethod()">
+<!-- ko if: isClickCollectMethod() -->
+<div id="click-collect-dates-container" class="click-collect-dates-container">
 	<div class="step-title" data-role="title" data-bind="text: getHeading()"></div>
 	<div class="click-collect-description" data-bind="text: getDescription()"></div>
 	<div class="click-collect-dates-list">
 		<div class="field required">
 			<label class="label" for="click_collect_date"><span data-bind="i18n: 'Select Collection Date'"></span></label>
 			<div class="control">
-				<!-- Try loading dynamic dates from server first, if available -->
-				<!-- ko if: hasDynamicDates() -->
 				<select name="click_collect_date" id="click_collect_date" class="required-entry" data-bind="
-					options: window.checkoutConfig.clickCollectDates,
+					options: availableDates,
 					optionsText: 'label',
 					optionsValue: 'value',
 					value: selectedCollectionDate,
 					optionsCaption: 'Please select a collection day'
 				"></select>
-				<!-- /ko -->
-				
-				<!-- Use dynamically generated fallback dates if server dates aren't available -->
-				<!-- ko ifnot: hasDynamicDates() -->
-				<select name="click_collect_date" id="click_collect_date" class="required-entry" data-bind="
-					options: fallbackDates,
-					optionsText: 'label',
-					optionsValue: 'value',
-					value: selectedCollectionDate,
-					optionsCaption: 'Please select a collection day'
-				"></select>
-				<!-- /ko -->
 			</div>
 		</div>
 	</div>
 </div>
+<!-- /ko -->

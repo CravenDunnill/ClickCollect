@@ -2,6 +2,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
 	<head>
 		<css src="CravenDunnill_ClickCollect::css/click-collect.css"/>
+		<script src="CravenDunnill_ClickCollect::js/direct-click-collect.js"/>
 	</head>
 	<body>
 		<referenceBlock name="checkout.root">
@@ -22,10 +23,8 @@
 															<item name="children" xsi:type="array">
 																<item name="click_collect_dates" xsi:type="array">
 																	<item name="component" xsi:type="string">CravenDunnill_ClickCollect/js/view/click-collect-dates</item>
-																	<item name="config" xsi:type="array">
-																		<item name="template" xsi:type="string">CravenDunnill_ClickCollect/checkout/shipping/click-collect-dates</item>
-																	</item>
-																	<item name="provider" xsi:type="string">checkoutProvider</item>
+																	<item name="displayArea" xsi:type="string">click-collect-dates</item>
+																	<item name="sortOrder" xsi:type="string">10</item>
 																</item>
 															</item>
 														</item>

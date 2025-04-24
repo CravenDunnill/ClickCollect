@@ -22,7 +22,6 @@ define([
 				if (!collectionDate) {
 					// Show validation error
 					$('#click_collect_date').addClass('mage-error');
-					$('#click_collect_date-error').show();
 					return false;
 				}
 				

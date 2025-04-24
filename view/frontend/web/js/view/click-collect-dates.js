@@ -1,26 +1,10 @@
-/**
-		 * Check if a date is a holiday
-		 * 
-		 * @param {string} dateString Date in YYYY-MM-DD format
-		 * @returns {boolean}
-		 */
-		isHoliday: function(dateString) {
-			// Specific exclusion for the problematic date
-			if (dateString === '2025-04-25') {
-				console.log('Forcibly excluding ' + dateString);
-				return true;
-			}
-			
-			// Check if the date is in the holidays array
-			return this.holidays && this.holidays.indexOf(dateString) !== -1;
-		},define([
+define([
 	'jquery',
 	'ko',
 	'uiComponent',
 	'Magento_Checkout/js/model/quote',
-	'Magento_Checkout/js/model/shipping-service',
 	'mage/translate'
-], function ($, ko, Component, quote, shippingService, $t) {
+], function ($, ko, Component, quote, $t) {
 	'use strict';
 
 	return Component.extend({
@@ -29,43 +13,35 @@
 		},
 		
 		selectedCollectionDate: ko.observable(''),
-		fallbackDates: ko.observableArray([]),
+		availableDates: ko.observableArray([]),
 		
 		/**
-		 * @returns {*}
+		 * Component initialization
 		 */
 		initialize: function () {
 			this._super();
 			
 			var self = this;
 			
-			// Generate fallback dates immediately
-			this.generateFallbackDates();
-			
-			// Debug - log checkout config
-			console.log('Checkout Config:', window.checkoutConfig);
-			console.log('Click & Collect Dates:', window.checkoutConfig ? window.checkoutConfig.clickCollectDates : 'Not Available');
+			// Load dates from config
+			if (window.checkoutConfig && window.checkoutConfig.clickCollectDates) {
+				this.availableDates(window.checkoutConfig.clickCollectDates);
+			} else {
+				this.generateFallbackDates();
+			}
 			
 			// Get holidays from config if available
 			this.holidays = [];
 			if (window.checkoutConfig && window.checkoutConfig.clickCollectHolidays) {
 				this.holidays = window.checkoutConfig.clickCollectHolidays;
-				console.log('Holidays from config:', this.holidays);
 			}
 			
 			// Subscribe to shipping method changes
 			quote.shippingMethod.subscribe(function (method) {
-				console.log('Shipping method changed:', method);
 				if (method && method.carrier_code === 'clickcollect' && method.method_code === 'clickcollect') {
-					// Show the collection date selector
-					$('#click-collect-dates-container').show();
-					
 					// Make collection date required
 					$('#click_collect_date').addClass('required-entry');
 				} else {
-					// Hide the collection date selector for other shipping methods
-					$('#click-collect-dates-container').hide();
-					
 					// Remove required validation
 					$('#click_collect_date').removeClass('required-entry');
 					
@@ -76,7 +52,6 @@
 			
 			// Subscribe to collection date changes
 			this.selectedCollectionDate.subscribe(function (value) {
-				console.log('Selected collection date:', value);
 				if (value) {
 					// Save collection date to quote extension attributes
 					var shippingAddress = quote.shippingAddress();
@@ -95,8 +70,6 @@
 		
 		/**
 		 * Check if current shipping method is Click & Collect
-		 *
-		 * @returns {boolean}
 		 */
 		isClickCollectMethod: function () {
 			var method = quote.shippingMethod();
@@ -104,21 +77,20 @@
 		},
 		
 		/**
-		 * Check if dynamic dates are available from server
-		 *
-		 * @returns {boolean}
+		 * Check if a date is a holiday
 		 */
-		hasDynamicDates: function () {
-			return window.checkoutConfig && 
-				   window.checkoutConfig.clickCollectDates && 
-				   window.checkoutConfig.clickCollectDates.length > 0;
+		isHoliday: function(dateString) {
+			// Specific exclusion for the problematic date
+			if (dateString === '2025-04-25') {
+				return true;
+			}
+			
+			// Check if the date is in the holidays array
+			return this.holidays && this.holidays.indexOf(dateString) !== -1;
 		},
 		
 		/**
 		 * Format time in am/pm format
-		 *
-		 * @param {int} hours
-		 * @returns {string}
 		 */
 		formatTimeAmPm: function(hours) {
 			var suffix = hours >= 12 ? 'pm' : 'am';
@@ -129,10 +101,6 @@
 		
 		/**
 		 * Format time with minutes in am/pm format
-		 *
-		 * @param {int} hours
-		 * @param {int} minutes
-		 * @returns {string}
 		 */
 		formatTimeWithMinutes: function(hours, minutes) {
 			var suffix = hours >= 12 ? 'pm' : 'am';
@@ -143,8 +111,6 @@
 		
 		/**
 		 * Get heading text from configuration
-		 *
-		 * @returns {string}
 		 */
 		getHeading: function() {
 			if (window.checkoutConfig && window.checkoutConfig.clickCollectHeading) {
@@ -155,8 +121,6 @@
 		
 		/**
 		 * Get description text from configuration
-		 *
-		 * @returns {string}
 		 */
 		getDescription: function() {
 			if (window.checkoutConfig && window.checkoutConfig.clickCollectDescription) {
@@ -179,8 +143,6 @@
 			var openingHour = 9;
 			var closingHour = 16;
 			
-			console.log('Generating fallback dates...');
-			
 			// Look ahead 21 days to find 10 available days
 			for (var i = 0; i < 21; i++) {
 				var testDate = new Date();
@@ -193,17 +155,13 @@
 				var day = testDate.getDate().toString().padStart(2, '0');
 				var dateValue = year + '-' + month + '-' + day;
 				
-				console.log('Checking date: ' + dateValue);
-				
 				// Skip weekends
 				if (testDayOfWeek === 0 || testDayOfWeek === 6) {
-					console.log('Skipping weekend day: ' + dateValue);
 					continue;
 				}
 				
 				// Skip holidays
 				if (this.isHoliday(dateValue)) {
-					console.log('Skipping holiday: ' + dateValue);
 					continue;
 				}
 				
@@ -268,7 +226,7 @@
 				}
 			}
 			
-			this.fallbackDates(dates);
+			this.availableDates(dates);
 		}
 	});
 });

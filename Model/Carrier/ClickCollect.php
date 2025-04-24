@@ -62,12 +62,35 @@ class ClickCollect extends AbstractCarrier implements CarrierInterface
 	 */
 	public function collectRates(RateRequest $request)
 	{
-		// Debug logging using Magento's built-in logger
+		// Debug logging - IMPORTANT for troubleshooting
 		$this->_logger->debug('ClickCollect::collectRates called');
 		
 		if (!$this->getConfigFlag('active')) {
 			$this->_logger->debug('ClickCollect shipping method is not active');
 			return false;
+		}
+		
+		// Check for minimum order amount
+		$minOrderTotal = $this->getConfigData('min_order_total');
+		if ($minOrderTotal && $request->getBaseSubtotalInclTax() < $minOrderTotal) {
+			$this->_logger->debug('Order total less than minimum: ' . $request->getBaseSubtotalInclTax() . ' < ' . $minOrderTotal);
+			return false;
+		}
+		
+		// Check for maximum order amount
+		$maxOrderTotal = $this->getConfigData('max_order_total');
+		if ($maxOrderTotal && $request->getBaseSubtotalInclTax() > $maxOrderTotal) {
+			$this->_logger->debug('Order total greater than maximum: ' . $request->getBaseSubtotalInclTax() . ' > ' . $maxOrderTotal);
+			return false;
+		}
+		
+		// Check specific country restrictions
+		if ($this->getConfigData('sallowspecific') == 1) {
+			$allowedCountries = explode(',', $this->getConfigData('specificcountry'));
+			if (!in_array($request->getDestCountryId(), $allowedCountries)) {
+				$this->_logger->debug('Country not allowed: ' . $request->getDestCountryId());
+				return false;
+			}
 		}
 		
 		$this->_logger->debug('ClickCollect is active, creating rate result');
@@ -108,6 +131,16 @@ class ClickCollect extends AbstractCarrier implements CarrierInterface
 	 * @return bool
 	 */
 	public function isTrackingAvailable()
+	{
+		return false;
+	}
+	
+	/**
+	 * Check if carrier has shipping labels available
+	 *
+	 * @return bool
+	 */
+	public function isShippingLabelsAvailable()
 	{
 		return false;
 	}
