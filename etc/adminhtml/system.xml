@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+	<system>
+		<section id="carriers" translate="label" type="text" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
+			<group id="clickcollect" translate="label" type="text" sortOrder="900" showInDefault="1" showInWebsite="1" showInStore="1">
+				<label>Click &amp; Collect</label>
+				<field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Enabled</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Title</label>
+				</field>
+				<field id="method_name" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Method Name</label>
+				</field>
+				<field id="heading" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Heading</label>
+				</field>
+				<field id="description" translate="label" type="textarea" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Description</label>
+				</field>
+				<field id="cutoff_time" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Cut-off Time (hours)</label>
+				</field>
+				<field id="holidays" translate="label" type="textarea" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Holidays and Warehouse Closures</label>
+					<comment>Enter one date per line in YYYY-MM-DD format</comment>
+				</field>
+				
+				<!-- Days Settings -->
+				<field id="monday_enabled" translate="label" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Monday Enabled</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="monday_opening" translate="label" type="time" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Monday Opening Time</label>
+				</field>
+				<field id="monday_closing" translate="label" type="time" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Monday Closing Time</label>
+				</field>
+				
+				<field id="tuesday_enabled" translate="label" type="select" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Tuesday Enabled</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="tuesday_opening" translate="label" type="time" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Tuesday Opening Time</label>
+				</field>
+				<field id="tuesday_closing" translate="label" type="time" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Tuesday Closing Time</label>
+				</field>
+				
+				<field id="wednesday_enabled" translate="label" type="select" sortOrder="160" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Wednesday Enabled</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="wednesday_opening" translate="label" type="time" sortOrder="170" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Wednesday Opening Time</label>
+				</field>
+				<field id="wednesday_closing" translate="label" type="time" sortOrder="180" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Wednesday Closing Time</label>
+				</field>
+				
+				<field id="thursday_enabled" translate="label" type="select" sortOrder="190" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Thursday Enabled</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="thursday_opening" translate="label" type="time" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Thursday Opening Time</label>
+				</field>
+				<field id="thursday_closing" translate="label" type="time" sortOrder="210" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Thursday Closing Time</label>
+				</field>
+				
+				<field id="friday_enabled" translate="label" type="select" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Friday Enabled</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="friday_opening" translate="label" type="time" sortOrder="230" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Friday Opening Time</label>
+				</field>
+				<field id="friday_closing" translate="label" type="time" sortOrder="240" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Friday Closing Time</label>
+				</field>
+				
+				<field id="saturday_enabled" translate="label" type="select" sortOrder="250" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Saturday Enabled</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="saturday_opening" translate="label" type="time" sortOrder="260" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Saturday Opening Time</label>
+				</field>
+				<field id="saturday_closing" translate="label" type="time" sortOrder="270" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Saturday Closing Time</label>
+				</field>
+				
+				<field id="sunday_enabled" translate="label" type="select" sortOrder="280" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Sunday Enabled</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="sunday_opening" translate="label" type="time" sortOrder="290" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Sunday Opening Time</label>
+				</field>
+				<field id="sunday_closing" translate="label" type="time" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Sunday Closing Time</label>
+				</field>
+				
+				<field id="sort_order" translate="label" type="text" sortOrder="310" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Sort Order</label>
+				</field>
+				<field id="model" translate="label" type="hidden" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Model</label>
+				</field>
+			</group>
+		</section>
+	</system>
+</config>

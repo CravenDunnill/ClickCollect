@@ -1,0 +1,28 @@
+<?php
+/** @var \CravenDunnill\ClickCollect\Block\Checkout\ClickCollectDates $block */
+$availableDates = $block->getAvailableCollectionDates();
+$selectedDate = $block->getSelectedCollectionDate();
+?>
+<div id="click-collect-dates-container" class="click-collect-dates-container" data-bind="visible: isClickCollectMethod()">
+	<div class="step-title" data-role="title">
+		<?= $block->escapeHtml($block->getHeading()) ?>
+	</div>
+	<div class="click-collect-description">
+		<?= $block->escapeHtml($block->getDescription()) ?>
+	</div>
+	<div class="click-collect-dates-list">
+		<div class="field required">
+			<label class="label">Select Collection Date:</label>
+			<div class="control">
+				<select name="click_collect_date" id="click_collect_date" class="required-entry" data-bind="value: selectedCollectionDate">
+					<option value=""><?= $block->escapeHtml(__('Please select a collection date')) ?></option>
+					<?php foreach ($availableDates as $date): ?>
+						<option value="<?= $block->escapeHtml($date['date']) ?>" <?= $selectedDate == $date['date'] ? 'selected="selected"' : '' ?>>
+							<?= $block->escapeHtml($date['day_name'] . ', ' . $date['formatted_date'] . ' (' . $date['opening'] . ' - ' . $date['closing'] . ')') ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+		</div>
+	</div>
+</div>

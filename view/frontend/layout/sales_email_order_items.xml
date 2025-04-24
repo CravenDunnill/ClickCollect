@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+	<body>
+		<referenceBlock name="order_totals">
+			<block class="Magento\Framework\View\Element\Template" name="click_collect_date_email" template="CravenDunnill_ClickCollect::email/order/collection_date.phtml" before="-">
+				<arguments>
+					<argument name="order" xsi:type="object">Magento\Sales\Block\Order\Email\Items</argument>
+				</arguments>
+			</block>
+		</referenceBlock>
+	</body>
+</page>

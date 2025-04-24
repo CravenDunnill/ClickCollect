@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+	<default>
+		<carriers>
+			<clickcollect>
+				<active>1</active>
+				<title>Click &amp; Collect</title>
+				<method_name>Click &amp; Collect</method_name>
+				<heading>Collect your order from 2 hours</heading>
+				<description>It's free to collect your order from our warehouse in Bridgnorth, Shropshire. We're open Monday to Friday 9am to 4pm.</description>
+				<cutoff_time>2</cutoff_time>
+				<warehouse_address>Our Warehouse, Bridgnorth, Shropshire</warehouse_address>
+				<monday_enabled>1</monday_enabled>
+				<monday_opening>09:00</monday_opening>
+				<monday_closing>16:00</monday_closing>
+				<tuesday_enabled>1</tuesday_enabled>
+				<tuesday_opening>09:00</tuesday_opening>
+				<tuesday_closing>16:00</tuesday_closing>
+				<wednesday_enabled>1</wednesday_enabled>
+				<wednesday_opening>09:00</wednesday_opening>
+				<wednesday_closing>16:00</wednesday_closing>
+				<thursday_enabled>1</thursday_enabled>
+				<thursday_opening>09:00</thursday_opening>
+				<thursday_closing>16:00</thursday_closing>
+				<friday_enabled>1</friday_enabled>
+				<friday_opening>09:00</friday_opening>
+				<friday_closing>16:00</friday_closing>
+				<saturday_enabled>0</saturday_enabled>
+				<sunday_enabled>0</sunday_enabled>
+				<model>CravenDunnill\ClickCollect\Model\Carrier\ClickCollect</model>
+				<sort_order>15</sort_order>
+			</clickcollect>
+		</carriers>
+	</default>
+</config>

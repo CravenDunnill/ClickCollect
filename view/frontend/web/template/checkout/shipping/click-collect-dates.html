@@ -1,0 +1,33 @@
+<div id="click-collect-dates-container" class="click-collect-dates-container" data-bind="visible: isClickCollectMethod()">
+	<div class="step-title" data-role="title" data-bind="i18n: 'Collect your order from 2 hours'"></div>
+	<div class="click-collect-description" data-bind="i18n: 'It\'s free to collect your order from our warehouse in Bridgnorth, Shropshire. We\'re open Monday to Friday 9am to 4pm.'"></div>
+	<div class="click-collect-dates-list">
+		<div class="field required">
+			<label class="label" for="click_collect_date"><span data-bind="i18n: 'Select Collection Date'"></span></label>
+			<div class="control">
+				<!-- Try loading dynamic dates first, if available -->
+				<!-- ko if: hasDynamicDates() -->
+				<select name="click_collect_date" id="click_collect_date" class="required-entry" data-bind="
+					options: window.checkoutConfig.clickCollectDates,
+					optionsText: 'label',
+					optionsValue: 'value',
+					value: selectedCollectionDate,
+					optionsCaption: 'Please select a collection date'
+				"></select>
+				<!-- /ko -->
+				
+				<!-- Fall back to hard-coded dates if dynamic dates aren't available -->
+				<!-- ko ifnot: hasDynamicDates() -->
+				<select name="click_collect_date" id="click_collect_date" class="required-entry" data-bind="value: selectedCollectionDate">
+					<option value="">Please select a collection date</option>
+					<option value="2025-04-25">Friday, Apr 25, 2025 (09:00 - 16:00)</option>
+					<option value="2025-04-26">Saturday, Apr 26, 2025 (09:00 - 16:00)</option>
+					<option value="2025-04-28">Monday, Apr 28, 2025 (09:00 - 16:00)</option>
+					<option value="2025-04-29">Tuesday, Apr 29, 2025 (09:00 - 16:00)</option>
+					<option value="2025-04-30">Wednesday, Apr 30, 2025 (09:00 - 16:00)</option>
+				</select>
+				<!-- /ko -->
+			</div>
+		</div>
+	</div>
+</div>

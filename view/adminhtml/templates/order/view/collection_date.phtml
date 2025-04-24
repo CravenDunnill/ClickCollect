@@ -1,0 +1,19 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Sales\ViewModel\OrderDetailsInfo $viewModel */
+$viewModel = $block->getViewModel();
+$order = $viewModel->getOrder();
+$collectionDate = $order->getClickCollectDate();
+
+if ($order->getShippingMethod() === 'clickcollect_clickcollect' && $collectionDate): ?>
+	<div class="admin__page-section-item-content">
+		<div class="order-payment-additional">
+			<div class="admin__page-section-item-title">
+				<span><?= $block->escapeHtml(__('Collection Date')) ?></span>
+			</div>
+			<div class="admin__page-section-item-content">
+				<?= $block->escapeHtml($collectionDate) ?>
+			</div>
+		</div>
+	</div>
+<?php endif; ?>

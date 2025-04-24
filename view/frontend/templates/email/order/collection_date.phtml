@@ -1,0 +1,8 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+$order = $block->getOrder();
+$collectionDate = $order->getClickCollectDate();
+
+if ($order->getShippingMethod() === 'clickcollect_clickcollect' && $collectionDate): ?>
+	<p><strong><?= $block->escapeHtml(__('Collection Date')) ?>:</strong> <?= $block->escapeHtml($collectionDate) ?></p>
+<?php endif; ?>

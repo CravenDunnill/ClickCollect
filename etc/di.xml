@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+	<type name="Magento\Checkout\Model\ShippingInformationManagement">
+		<plugin name="cravendunnill_clickcollect_save_date_to_order" type="CravenDunnill\ClickCollect\Model\Checkout\SaveCollectionDateToOrderPlugin" sortOrder="10" disabled="false"/>
+	</type>
+	
+	<type name="Magento\Checkout\Model\CompositeConfigProvider">
+		<arguments>
+			<argument name="configProviders" xsi:type="array">
+				<item name="click_collect_config_provider" xsi:type="object">CravenDunnill\ClickCollect\Model\CheckoutConfigProvider</item>
+			</argument>
+		</arguments>
+	</type>
+	
+	<type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+		<arguments>
+			<argument name="collections" xsi:type="array">
+				<item name="sales_order_grid_data_source" xsi:type="string">Magento\Sales\Model\ResourceModel\Order\Grid\Collection</item>
+			</argument>
+		</arguments>
+	</type>
+	
+	<type name="Magento\Sales\Model\ResourceModel\Order\Grid\Collection">
+		<plugin name="click_collect_add_to_grid" type="CravenDunnill\ClickCollect\Plugin\AddCollectionDateToOrderGrid" />
+	</type>
+</config>
