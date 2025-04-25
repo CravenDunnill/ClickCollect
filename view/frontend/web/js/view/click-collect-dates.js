@@ -14,6 +14,7 @@ define([
 		
 		selectedCollectionDate: ko.observable(''),
 		availableDates: ko.observableArray([]),
+		isVisible: ko.observable(false),
 		
 		/**
 		 * Component initialization
@@ -23,10 +24,14 @@ define([
 			
 			var self = this;
 			
+			console.log('Click & Collect component initialized');
+			
 			// Load dates from config
 			if (window.checkoutConfig && window.checkoutConfig.clickCollectDates) {
+				console.log('Click & Collect dates from config:', window.checkoutConfig.clickCollectDates);
 				this.availableDates(window.checkoutConfig.clickCollectDates);
 			} else {
+				console.log('No Click & Collect dates in config, generating fallback dates');
 				this.generateFallbackDates();
 			}
 			
@@ -36,22 +41,17 @@ define([
 				this.holidays = window.checkoutConfig.clickCollectHolidays;
 			}
 			
+			// Check initial shipping method
+			this.checkShippingMethod(quote.shippingMethod());
+			
 			// Subscribe to shipping method changes
 			quote.shippingMethod.subscribe(function (method) {
-				if (method && method.carrier_code === 'clickcollect' && method.method_code === 'clickcollect') {
-					// Make collection date required
-					$('#click_collect_date').addClass('required-entry');
-				} else {
-					// Remove required validation
-					$('#click_collect_date').removeClass('required-entry');
-					
-					// Clear the selected date
-					self.selectedCollectionDate('');
-				}
+				self.checkShippingMethod(method);
 			});
 			
 			// Subscribe to collection date changes
 			this.selectedCollectionDate.subscribe(function (value) {
+				console.log('Collection date changed to:', value);
 				if (value) {
 					// Save collection date to quote extension attributes
 					var shippingAddress = quote.shippingAddress();
@@ -66,6 +66,32 @@ define([
 			});
 			
 			return this;
+		},
+		
+		/**
+		 * Check if shipping method is Click & Collect and update visibility
+		 */
+		checkShippingMethod: function(method) {
+			console.log('Shipping method changed:', method);
+			
+			if (method && method.carrier_code === 'clickcollect' && method.method_code === 'clickcollect') {
+				console.log('Click & Collect method selected, showing component');
+				this.isVisible(true);
+				
+				// Make collection date required
+				setTimeout(function() {
+					$('#click_collect_date').addClass('required-entry');
+				}, 300);
+			} else {
+				console.log('Click & Collect method not selected, hiding component');
+				this.isVisible(false);
+				
+				// Remove required validation
+				$('#click_collect_date').removeClass('required-entry');
+				
+				// Clear the selected date
+				this.selectedCollectionDate('');
+			}
 		},
 		
 		/**
@@ -226,6 +252,7 @@ define([
 				}
 			}
 			
+			console.log('Generated fallback dates:', dates);
 			this.availableDates(dates);
 		}
 	});
